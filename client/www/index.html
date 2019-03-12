@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Gestor de Passwords</title>
+		<link rel="shortcut icon" href="favicon.png">
+		<style>
+		label, select {
+			color: rgb(0, 0, 0);
+			font-weight: bold;
+			display: block;
+			width: 150px;
+			float: left;
+		}
+
+		input[type=text], select {
+			width: 100%;
+			padding: 12px 20px;
+			margin: 8px 0;
+			display: inline-block;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			box-sizing: border-box;
+		}
+
+		input[type=password], select {
+			width: 100%;
+			padding: 12px 20px;
+			margin: 8px 0;
+			display: inline-block;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			box-sizing: border-box;
+		}
+
+		input[type=button] {
+			width: 46%;
+			display: inline;
+			background-color: #4CAF50;
+			color: white;
+			padding: 14px 20px;
+			margin: 8px 8px 8px 8px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+
+		input[type=submit]:hover {
+		background-color: #45a049;
+		}
+
+		div {
+		border-radius: 5px;
+		background-color: #f2f2f2;
+		padding: 20px;
+		}
+		</style>
+	</head>
+	<body onload=start()>
+		<!-- UI layout -->
+		<div>
+			<label for="idUser">User:</label>
+			<input type="text" id="idUser" name="user" placeholder="Escriba user..">
+		  
+			<label for="idPass">Password:</label>
+			<input type="password" id="idPass" name="pass" placeholder="Escriba pass..">
+			
+			<p><input type="button" id="idLogin" value="Login"><input type="button" id="idRegister" value="Register"></p>
+
+			<label id="labelValidado" style="display:none; color: rgb(30, 255, 0); text-align:center">User valido</label> 
+			<label id="labelNoValidado" style="display:none; color: rgb(255, 0, 0); text-align:center">User no registrado</label>
+
+			<textarea id="idCuentas" name="cuentas" rows="10" style="resize:none; width: 100%" readonly></textarea>
+		</div>
+
+		<!-- Connect UI actions to Go functions -->
+		<script>
+			//function myFunction() {
+  			//	document.getElementById("idUser").setAttribute("value", "pablo");
+			//}
+
+			const loginButton = document.getElementById('idLogin');
+			const inputUser = document.getElementById('idUser');
+			const inputPass = document.getElementById('idPass');
+			const cuentasText = document.getElementById("idCuentas");
+
+			/*
+			const renderUser = async () => {
+				//counter.innerText = `Count: ${await window.counterValue()}`;
+				//inputUser.setAttribute("value", `${await window.getPass()}`);
+				inputUser.value = `${await window.getPass()}`;
+			};*/
+
+			//Funcion para comprobar el bool devuelto por el server
+			const comprobarUser = async () => {
+				//var validado = `${await window.getValidado()}`; //Obtenemos el valor register de user
+				var cuentas = `${await window.getCuentas()}`; //Obtenemos las cuentas del user
+				cuentasText.value = cuentas;
+				/*
+				if(validado == true){
+					document.getElementById("labelValidado").style.display="block"; //Para mostrar el label oculto de user valido
+					document.getElementById("labelCuentas").innerHTML = cuentas;
+					alert(cuentas);
+				} else {
+					document.getElementById("labelNoValidado").style.display="block";
+					document.getElementById("labelCuentas").innerHTML = cuentas;
+					alert(cuentas);
+				}*/
+			}
+
+
+			const renderPass = async () => {
+				inputPass.value = `${await window.getUser()}`;
+			};
+
+			loginButton.addEventListener('click', async () => {
+				var userText = inputUser.value;
+				var passText = inputPass.value;
+				//document.getElementById("labelValidado").style.display="block"; //Para mostrar el label oculto de user valido
+
+				//alert(userText);
+
+				if(userText != "" && passText != ""){
+					await setUser(userText);
+					await setPass(passText); // Call Go function setPass
+					await validarUser(); // //Lamamos a la funcion de validar user del cliente
+
+					comprobarUser();
+				} else if (userText == "") {
+					alert("El usuario no puede estar en blanco");
+				} else {
+					alert("La pass no puede estar en blanco");
+				}
+			});
+
+			//renderUser();
+
+		</script>
+	</body>
+</html>
