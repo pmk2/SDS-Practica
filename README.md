@@ -2,13 +2,13 @@
 Repositorio privado para la práctica de SDS
 
 -Crear rama y cambiarse a ella
-  . git checkout -b <rama-nueva>
+  . git checkout -b "rama-nueva"
   
  -Subir rama a remoto
-  . git push -u origin <nueva-rama>
+  . git push -u origin "nueva-rama"
   
  -Cambiar de rama
-  . git checkout <nombreRama>
+  . git checkout "nombreRama"
   
  -Ver rama actual
   . git branch
@@ -21,7 +21,7 @@ Repositorio privado para la práctica de SDS
  -Actualizar mi rama con master
   .git checkout master
   .git pull
-  .git checkout <mi-rama>
+  .git checkout "mi-rama"
   .git merge master
   
  -Llevar a master mis cambios
