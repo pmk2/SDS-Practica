@@ -1,5 +1,4 @@
 // Main de server
-//Hola jorge
 package main
 
 import "fmt"
