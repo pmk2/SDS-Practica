@@ -4,15 +4,14 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/url"
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 	"sync"
 
 	"github.com/zserge/lorca"
@@ -25,20 +24,16 @@ type usuario struct {
 	sync.Mutex
 	user     string
 	pass     string
-	register bool
+	validado bool
+	mensaje  string
 	cuentas  string
 }
 
-func (c *usuario) setUser(us string) {
+func (c *usuario) setDatosUser(us string, pas string) {
 	c.Lock()
 	defer c.Unlock()
 	c.user = us
-}
-
-func (c *usuario) setPass(us string) {
-	c.Lock()
-	defer c.Unlock()
-	c.pass = us
+	c.pass = pas
 }
 
 func (c *usuario) getPass() string {
@@ -53,10 +48,12 @@ func (c *usuario) getUser() string {
 	return c.user
 }
 
-func (c *usuario) getRegister() bool {
+func (c *usuario) getValidado() string {
 	c.Lock()
 	defer c.Unlock()
-	return c.register
+	s := strconv.FormatBool(c.validado)
+	fmt.Println("entra")
+	return s
 }
 
 func (c *usuario) getCuentas() string {
@@ -66,37 +63,36 @@ func (c *usuario) getCuentas() string {
 	return c.cuentas
 }
 
+func (c *usuario) getMSG() string {
+	c.Lock()
+	defer c.Unlock()
+	//fmt.Println(c.cuentas)
+	return c.mensaje
+}
+
 func (c *usuario) validarUser() {
 	c.Lock()
 	defer c.Unlock()
+	resul := resp{}
+	resul = client(c, 1)
+	c.validado = resul.Ok
+	c.mensaje = resul.Msg
+}
 
-	//Conectamos con el server
-	conn, err := net.Dial("tcp", "localhost:1337") // llamamos al servidor
-	chk(err)
-	defer conn.Close() // es importante cerrar la conexión al finalizar
+func (c *usuario) registerUser() {
+	c.Lock()
+	defer c.Unlock()
+	resul := resp{}
+	resul = client(c, 0)
+	c.validado = resul.Ok
+	c.mensaje = resul.Msg
+	//c.cuentas = client(c, 0)
+}
 
-	fmt.Println("conectado a ", conn.RemoteAddr())
-	netscan := bufio.NewScanner(conn) // scanner para la conexión (datos desde el servidor)
-
-	var cuentas string
-	fmt.Fprintln(conn, c.user)
-	fmt.Fprintln(conn, c.pass)
-	for netscan.Scan() { // escaneamos la conexión
-		cuentas += netscan.Text() // guardamos las cuentas desde el servidor
-		cuentas += "\r\n"
-		//fmt.Println(cuentas)
-		//fmt.Println(netscan.Text())
-		//break
-	}
-	c.cuentas = cuentas
-	fmt.Println(cuentas)
-	/*
-		if strings.Compare(c.cuentas, "El usuario no existe") == 0 {
-			c.register = false
-		} else {
-			c.register = true
-		}*/
-
+func (c *usuario) cambiarPantalla() {
+	c.Lock()
+	defer c.Unlock()
+	cuentas(c)
 }
 
 func main() {
@@ -104,7 +100,7 @@ func main() {
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 600, 500, args...)
+	ui, err := lorca.New("", "", 600, 490, args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,13 +114,15 @@ func main() {
 	// Create and bind Go object to the UI
 	c := &usuario{}
 
-	ui.Bind("setUser", c.setUser)
-	ui.Bind("setPass", c.setPass)
+	ui.Bind("setDatosUser", c.setDatosUser)
 	ui.Bind("getUser", c.getUser)
 	ui.Bind("getPass", c.getPass)
-	ui.Bind("getValidado", c.getRegister)
+	ui.Bind("getValidado", c.getValidado)
 	ui.Bind("validarUser", c.validarUser)
+	ui.Bind("registerUser", c.registerUser)
 	ui.Bind("getCuentas", c.getCuentas)
+	ui.Bind("getMSG", c.getMSG)
+	ui.Bind("cambiarPantalla", c.cambiarPantalla)
 
 	// Load HTML.
 	b, err := ioutil.ReadFile("./www/index.html") // just pass the file name

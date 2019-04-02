@@ -43,6 +43,52 @@ func mostrarCuentas(user int) string {
 	return cuentas
 }
 
+func devolverUser(user string) (bool, int, string, string) {
+	existe := false
+	var id_user int
+	var usr, password, salt string
+
+	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/gestorpass")
+	if err != nil {
+		fmt.Print("Error abriendo BD: ")
+		fmt.Println(err)
+	}
+	defer db.Close() //Para que se cierre la bd al finalizar
+
+	//Query para contar users y comprobar que existe user
+	num, _ := db.Query("select count(id_user) from usuario where user = '" + user + "'")
+	defer num.Close() //Para que se cierre la query al finalizar
+
+	var count int
+	for num.Next() {
+		err5 := num.Scan(&count)
+		if err5 != nil {
+			fmt.Println(err5)
+		}
+	}
+
+	if count != 0 {
+		//Query para obtener pass
+		dato, err2 := db.Query("select * from usuario where user = '" + user + "'")
+		if err2 != nil {
+			fmt.Print("Error en la query: ")
+			fmt.Println(err2)
+		}
+		defer dato.Close() //Para que se cierre la query al finalizar
+
+		for dato.Next() {
+			err3 := dato.Scan(&id_user, &usr, &password, &salt)
+			if err3 != nil {
+				fmt.Print("Error escaneando fila: ")
+				fmt.Println(err3)
+			}
+		}
+		existe = true
+	}
+
+	return existe, id_user, password, salt
+}
+
 // Funcion que comprueba user y pass, devuelve un int
 // 0 si el usuario no existe
 // -1 si la pass es incorrecta
@@ -84,9 +130,9 @@ func comprobarUser(user string, pass string) int {
 			defer dato.Close() //Para que se cierre la query al finalizar
 
 			var id_user int
-			var user, password string
+			var user, password, salt string
 			for dato.Next() {
-				err3 := dato.Scan(&id_user, &user, &password)
+				err3 := dato.Scan(&id_user, &user, &password, &salt)
 				if err3 != nil {
 					fmt.Print("Error escaneando fila: ")
 					fmt.Println(err3)
@@ -117,7 +163,7 @@ func comprobarUser(user string, pass string) int {
 }
 
 //Funcion para hacer inserts en la base de datos
-func insertUser(user string, pass string) bool {
+func insertUser(user string, pass string, salt string) bool {
 	var ok bool
 	ok = false
 
@@ -140,7 +186,7 @@ func insertUser(user string, pass string) bool {
 
 		if count == 0 {
 			//Query para obtener pass
-			insert, err2 := db.Query("INSERT INTO usuario (user, password) VALUES ('" + user + "',SHA1('" + pass + "'))")
+			insert, err2 := db.Query("INSERT INTO usuario (user, password, salt) VALUES ('" + user + "','" + pass + "','" + salt + "')")
 			if err2 != nil {
 				fmt.Print("Error en la query: ")
 				fmt.Println(err2)
