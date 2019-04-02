@@ -75,3 +75,5 @@ func decode64(s string) []byte {
 	chk(err)                                     // comprobamos el error
 	return b                                     // devolvemos los datos originales
 }
+
+//Funciones para aes
