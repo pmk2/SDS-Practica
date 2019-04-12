@@ -4,40 +4,37 @@ import (
 	"database/sql"
 	"fmt"
 	"runtime"
-	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql" //Libreria para mysql
 )
 
 //Funcion para mostrar cuentas de un user
-func mostrarCuentas(user int) string {
-	var cuentas string
-	cuentas = ""
+func mostrarCuentas(id string) []cuenta {
+	var cuentas []cuenta
+	var cuenta cuenta
 
 	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/gestorpass")
 	chk(err)
 	defer db.Close() //Para que se cierre la bd al finalizar
 
-	idUser := strconv.Itoa(user) // Convertimos el int a string
-	dato, err2 := db.Query("select * from cuentas where id_user = " + idUser)
+	dato, err2 := db.Query("select * from cuentas where id_user = " + id)
 	chk(err2)
 	defer dato.Close() //Para que se cierre la query al finalizar
 
-	contador := 1
 	for dato.Next() {
-		var user, password, sitio_web string
-		var id_cuentas, id_user int
-		err3 := dato.Scan(&id_cuentas, &id_user, &user, &password, &sitio_web)
+		var user, password, url string
+		var idCuenta, idUser int
+		err3 := dato.Scan(&idCuenta, &idUser, &user, &password, &url)
 		chk(err3)
 
-		//1. Usuario: pmk2@alu.ua.es || Pass: pass || Sitio: ua.es
-		//fmt.Print(id_cuentas)
-		//fmt.Print(" ")
-		//fmt.Print(id_user)
-		cuentas += fmt.Sprint(contador)
-		cuentas += fmt.Sprintln(". User: " + user + " || Pass: " + password + " || Sitio: " + sitio_web)
-		contador++ // Incrementamos en uno el contador
+		cuenta.user = user
+		cuenta.pass = password
+		cuenta.url = url
+
+		cuentas = append(cuentas, cuenta)
+
+		//cuentas += fmt.Sprintln(". User: " + user + " || Pass: " + password + " || Sitio: " + url)
 	}
 
 	return cuentas
@@ -201,7 +198,7 @@ func insertUser(user string, pass string, salt string) bool {
 }
 
 //Funcion para hacer inserts en la base de datos
-func insertCuenta(id int, user string, pass string, url string) bool {
+func insertCuenta(id string, user string, pass string, url string) bool {
 	var ok bool
 	ok = false
 
@@ -212,9 +209,8 @@ func insertCuenta(id int, user string, pass string, url string) bool {
 		chk(err)
 		defer db.Close() //Para que se cierre la bd al finalizar
 
-		//Query para obtener pass
-		idUser := strconv.Itoa(id) // Convertimos el int a string
-		insert, err2 := db.Query("INSERT INTO cuentas (id_user, user, password, sitio_web) VALUES (" + idUser + ",'" + user + "','" + pass + "','" + url + "')")
+		//Query para insertar cuenta
+		insert, err2 := db.Query("INSERT INTO cuentas (id_user, user, password, sitio_web) VALUES (" + id + ",'" + user + "','" + pass + "','" + url + "')")
 		if err2 != nil {
 			fmt.Print("Error en la query: ")
 			fmt.Println(err2)

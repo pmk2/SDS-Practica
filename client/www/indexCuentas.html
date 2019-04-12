@@ -144,6 +144,8 @@
 	<body onload=start()>
 		<!-- UI layout -->
 		<div>
+		<!-- input id="idExit" type="image" src="https://img.icons8.com/small/32/000000/exit.png" style="float:right" -->
+
 			<h1>Gestor de Contraseñas JTG</h1>
 			<label for="idLabelLogin">Login de la cuenta:</label>
 			<input type="text" id="idLogin" name="user" placeholder="Escriba user de la cuenta..">
@@ -160,12 +162,20 @@
         </div>
         
         <script>
+			
             const viewButton = document.getElementById('idView');
 			const createButton = document.getElementById('idCreate');
 			const inputLogin = document.getElementById('idLogin');
 			const inputPass = document.getElementById('idPass');
             const inputURL = document.getElementById('idURL');
 			const cuentasText = document.getElementById("idCuentas");
+		
+
+			//Funcion para el boton de crear cuenta
+            viewButton.addEventListener('click', async () => {
+				await obtenerCuentas();
+				renderCuentas();
+            });
 
             //Funcion para el boton de crear cuenta
             createButton.addEventListener('click', async () => {
@@ -174,8 +184,8 @@
 				var urlText = inputURL.value;
 
 				if(loginText != "" && passText != "" && urlText != ""){
-                    await setDatosCuenta(loginText, passText, urlText);
-                    renderCuentas();
+                    await setCuentaInsertar(loginText, passText, urlText);
+                    insertarCuenta();
 				} else if (loginText == "") {
 					alert("El usuario no puede estar en blanco");
 				} else if (passText == "") {
@@ -184,9 +194,18 @@
 					alert("La URL no puede estar en blanco");
 				}
             });
+
+			const insertarCuenta = async () => {
+				`${await window.insertarCuenta()}`;
+				renderMSG();
+			}
             
-            const renderCuentas = async () => {
-				cuentasText.value = `${await window.obtenerCuentas()}`;
+			const renderCuentas = async ()  => {
+				cuentasText.value = `${await window.getCuentas()}`;
+			}
+
+            const renderMSG = async () => {
+				cuentasText.value = `${await window.getMensaje()}`;
 			};
 
         </script>

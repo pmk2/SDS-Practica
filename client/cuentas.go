@@ -8,23 +8,54 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/zserge/lorca"
 )
 
-func (c2 *usuario) setDatosCuenta(login string, pass string, url string) {
+func (c2 *usuario) setCuentaInsertar(login string, pass string, urlC string) {
 	//c2.Lock()
 	//defer c2.Unlock()
-	c2.cuentas = "Login: " + login + " Pass: " + pass + " URL: " + url
-	//fmt.Println(c2.user)
-	//fmt.Println(c2.pass)
-	//fmt.Println(c2.cuentas)
+	var account cuenta
+	account.user = login
+	account.pass = pass
+	account.url = urlC
+
+	c2.cuentaInsertar = account
+	c2.mensaje = "Login: " + login + " Pass: " + pass + " URL: " + urlC
 }
 
-func (c2 *usuario) obtenerCuentas() string {
-	//c2.Lock()
-	//defer c2.Unlock()
-	return c2.cuentas
+func (c2 *usuario) obtenerCuentas() {
+	var cuentas []cuenta
+	cuentas = obtenerCuentasUser(c2)
+	c2.cuentas = cuentas
+	fmt.Println(c2.cuentas)
+}
+
+func (c2 *usuario) getMensaje() string {
+	//fmt.Println("Entra")
+	return c2.mensaje
+}
+
+func (c2 *usuario) getCuentas() string {
+	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
+	contador := 1
+	cuentasUnidas := "*****Cuentas de " + c2.user + "*****\n"
+	for i := 0; i < len(c2.cuentas); i++ {
+		contStr := strconv.Itoa(contador)
+		cuentasUnidas += contStr + ". Usuario: " + c2.cuentas[i].user + "|| Password: " + c2.cuentas[i].pass + "|| URL: " + c2.cuentas[i].url + "\n"
+		contador++
+	}
+	c2.mensaje = cuentasUnidas
+	fmt.Println(c2.mensaje)
+	return c2.mensaje
+}
+
+func (c2 *usuario) insertarCuenta() {
+	resul := resp{}
+	resul = insertCuenta(c2)
+	c2.mensaje = resul.Msg
 }
 
 func cuentas(user *usuario) {
@@ -47,8 +78,11 @@ func cuentas(user *usuario) {
 	c2 := &usuario{}
 	c2 = user
 
-	ui.Bind("setDatosCuenta", c2.setDatosCuenta)
+	ui.Bind("setCuentaInsertar", c2.setCuentaInsertar)
 	ui.Bind("obtenerCuentas", c2.obtenerCuentas)
+	ui.Bind("insertarCuenta", c2.insertarCuenta)
+	ui.Bind("getMensaje", c2.getMensaje)
+	ui.Bind("getCuentas", c2.getCuentas)
 
 	// Load HTML.
 	b, err := ioutil.ReadFile("./www/indexCuentas.html") // just pass the file name
@@ -74,4 +108,26 @@ func cuentas(user *usuario) {
 	}
 
 	log.Println("exiting...")
+}
+
+func transformarCuentas(cuentasString string) []cuenta {
+	var cuentas []cuenta
+	var cuenta cuenta
+	var cuentasSplit []string
+
+	cuentasSplit = strings.Split(cuentasString, "#")
+	//fmt.Println(cuentasSplit[0])
+
+	for i := 0; i < len(cuentasSplit)-1; i++ {
+		userPassURL := strings.Split(cuentasSplit[i], "|")
+		//fmt.Println(userPassURL)
+		cuenta.user = userPassURL[0]
+		cuenta.pass = userPassURL[1]
+		cuenta.url = userPassURL[2]
+		cuentas = append(cuentas, cuenta)
+	}
+
+	//fmt.Println(cuentas)
+
+	return cuentas
 }

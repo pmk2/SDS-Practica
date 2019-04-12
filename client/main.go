@@ -22,11 +22,20 @@ import (
 // operations, but for more complex cases one should use proper synchronization.
 type usuario struct {
 	sync.Mutex
-	user     string
-	pass     string
-	validado bool
-	mensaje  string
-	cuentas  string
+	id             int
+	user           string
+	pass           string
+	validado       bool
+	mensaje        string
+	cuentas        []cuenta
+	cuentaInsertar cuenta
+}
+
+//Estructura de cuenta
+type cuenta struct {
+	user string
+	pass string
+	url  string
 }
 
 func (c *usuario) setDatosUser(us string, pas string) {
@@ -52,16 +61,17 @@ func (c *usuario) getValidado() string {
 	c.Lock()
 	defer c.Unlock()
 	s := strconv.FormatBool(c.validado)
-	fmt.Println("entra")
+	//fmt.Println("entra")
 	return s
 }
 
-func (c *usuario) getCuentas() string {
+/*
+func (c *usuario) getCuentas() []cuenta {
 	c.Lock()
 	defer c.Unlock()
 	//fmt.Println(c.cuentas)
 	return c.cuentas
-}
+}*/
 
 func (c *usuario) getMSG() string {
 	c.Lock()
@@ -77,6 +87,7 @@ func (c *usuario) validarUser() {
 	resul = client(c, 1)
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
+	c.id = resul.ID
 }
 
 func (c *usuario) registerUser() {
@@ -120,7 +131,7 @@ func main() {
 	ui.Bind("getValidado", c.getValidado)
 	ui.Bind("validarUser", c.validarUser)
 	ui.Bind("registerUser", c.registerUser)
-	ui.Bind("getCuentas", c.getCuentas)
+	//ui.Bind("getCuentas", c.getCuentas)
 	ui.Bind("getMSG", c.getMSG)
 	ui.Bind("cambiarPantalla", c.cambiarPantalla)
 

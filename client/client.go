@@ -10,12 +10,20 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 )
+
+// respuesta del servidor de cuenta
+type respCuenta struct {
+	Ok      bool   // true -> correcto, false -> error
+	Cuentas string // mensaje adicional
+}
 
 // respuesta del servidor
 type resp struct {
 	Ok  bool   // true -> correcto, false -> error
 	Msg string // mensaje adicional
+	ID  int    //id del user
 }
 
 // opcion 0 register, 1 login
@@ -106,5 +114,111 @@ func client(c *usuario, opc int) resp {
 		//responseString := string(responseData)
 		//fmt.Println(responseString)
 	}
+
 	return respuesta
+}
+
+// opcion 0 register, 1 login
+func insertCuenta(c *usuario) resp {
+
+	/* creamos un cliente especial que no comprueba la validez de los certificados
+	esto es necesario por que usamos certificados autofirmados (para pruebas) */
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	// hash con SHA512 de la contraseña
+	keyClient := sha512.Sum512([]byte(c.pass))
+	//keyLogin := keyClient[:32]  // una mitad para el login (256 bits)
+	keyData := keyClient[32:64] // la otra para los datos (256 bits)
+
+	var respuesta resp
+	// Anyadir cuenta al user
+	userJSON, err := json.Marshal(c.cuentaInsertar.user) // Codificamos con JSON el user
+	chk(err)
+	passJSON, err := json.Marshal(c.cuentaInsertar.pass) // Codificamos con JSON el user
+	chk(err)
+	urlJSON, err := json.Marshal(c.cuentaInsertar.url) // Codificamos con JSON el user
+	chk(err)
+
+	data := url.Values{}
+	data.Set("cmd", "addAccount")      // comando (string)
+	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
+	// comprimimos, ciframos y codificamos la clave privada
+	data.Set("user", encode64(encrypt(compress(userJSON), keyData)))
+	// comprimimos, ciframos y codificamos la clave privada
+	data.Set("pass", encode64(encrypt(compress(passJSON), keyData)))
+	// comprimimos, ciframos y codificamos la clave privada
+	data.Set("url", encode64(encrypt(compress(urlJSON), keyData)))
+
+	r, err := client.PostForm("https://localhost:10443", data)
+	chk(err)
+	//io.Copy(os.Stdout, r.Body) // mostramos el cuerpo de la respuesta (es un reader)
+	//fmt.Println()
+
+	responseData, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	json.Unmarshal(responseData, &respuesta)
+
+	//responseString := string(responseData)
+	//fmt.Println(responseString)
+
+	return respuesta
+}
+
+//Función para obtener cuentas
+func obtenerCuentasUser(c *usuario) []cuenta {
+
+	var cuentas []cuenta
+	/* creamos un cliente especial que no comprueba la validez de los certificados
+	esto es necesario por que usamos certificados autofirmados (para pruebas) */
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	// hash con SHA512 de la contraseña
+	keyClient := sha512.Sum512([]byte(c.pass))
+	//keyLogin := keyClient[:32]  // una mitad para el login (256 bits)
+	keyData := keyClient[32:64] // la otra para los datos (256 bits)
+
+	var respuesta respCuenta
+	// Anyadir cuenta al user
+	/*userJSON, err := json.Marshal(c.cuentaInsertar.user) // Codificamos con JSON el user
+	chk(err)
+	passJSON, err := json.Marshal(c.cuentaInsertar.pass) // Codificamos con JSON el user
+	chk(err)
+	urlJSON, err := json.Marshal(c.cuentaInsertar.url) // Codificamos con JSON el user
+	chk(err)*/
+
+	data := url.Values{}
+	data.Set("cmd", "getAccounts")     // comando (string)
+	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
+
+	r, err := client.PostForm("https://localhost:10443", data)
+	chk(err)
+
+	responseData, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//fmt.Println(responseData)
+	json.Unmarshal(responseData, &respuesta)
+	//fmt.Println(respuesta.Cuentas)
+
+	//transformar String de cuentas a []cuenta
+	var cuentasUser []cuenta
+	cuentasUser = transformarCuentas(respuesta.Cuentas)
+
+	cuentas = decryptCuentas(cuentasUser, keyData)
+
+	//responseString := string(responseData)
+	//fmt.Println(cuentas)
+
+	return cuentas
 }
