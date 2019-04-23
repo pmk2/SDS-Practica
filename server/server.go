@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -19,9 +20,9 @@ type user struct {
 
 //Estructura de cuenta
 type cuenta struct {
-	user string
-	pass string
-	url  string
+	User string `json:"user"`
+	Pass string `json:"pass"`
+	URL  string `json:"url"`
 }
 
 // mapa con todos los usuarios
@@ -41,6 +42,11 @@ type respCuenta struct {
 	Cuentas string // cuentas del user
 }
 
+type respPrueba struct {
+	Ok      bool     `json:"Ok"`
+	Cuentas []cuenta `json:"Cuentas"`
+}
+
 // función para escribir una respuesta del servidor
 func response(w io.Writer, ok bool, msg string, id int) {
 	r := resp{Ok: ok, Msg: msg, ID: id} // formateamos respuesta
@@ -54,19 +60,25 @@ func responseCuentas(w io.Writer, ok bool, cuentas []cuenta) {
 	var cu string
 	cu = ""
 	for i := 0; i < len(cuentas); i++ {
-		cu += cuentas[i].user + "|" + cuentas[i].pass + "|" + cuentas[i].url + "#"
+		cu += cuentas[i].User + "|" + cuentas[i].Pass + "|" + cuentas[i].URL + "#"
 	}
-	r := respCuenta{Ok: ok, Cuentas: cu} // formateamos respuesta
+	r := respPrueba{Ok: ok, Cuentas: cuentas} // formateamos respuesta
 
 	rJSON, err := json.Marshal(&r) // codificamos en JSON
 	chk(err)                       // comprobamos error
 	w.Write(rJSON)                 // escribimos el JSON resultante
-	//json.Unmarshal(rJSON, r)
-	//fmt.Println(rJSON)
-	var res string
+
+	//------------Pruebas-----------------
+	rPrueba := respPrueba{Ok: ok, Cuentas: cuentas}
+	rPruebaJSON, _ := json.Marshal(rPrueba)
+	//prueba := string(rPruebaJSON)
+	//fmt.Println(prueba)
+	//------------------------------------
+
+	var res respPrueba
 	//accounts := make([]cuenta, len(cuentas))
-	json.Unmarshal(rJSON, &res)
-	//fmt.Println(res)
+	json.Unmarshal(rPruebaJSON, &res)
+	fmt.Println(res)
 }
 
 // gestiona el modo servidor

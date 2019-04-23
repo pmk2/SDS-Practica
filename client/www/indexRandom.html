@@ -144,22 +144,64 @@
 	<body onload=start()>
 		<!-- UI layout -->
 		<div>
-		<!-- input id="idExit" type="image" src="https://img.icons8.com/small/32/000000/exit.png" style="float:right" -->
+			<!-- input id="idExit" type="image" src="https://img.icons8.com/small/32/000000/exit.png" style="float:right" -->
+	
+				<h1>Generador de Contraseñas Random</h1>
 
-			<h1>Generador de Contraseñas Random</h1>
-			<label for="idLabelLogin">Numero de caracteres (max. 64):</label>
-			<input type="text" id="idLogin" name="user" placeholder="Escriba user de la cuenta..">
-		  
-			<label for="idLabelPass">Password de la cuenta:</label>
-            <input type="password" id="idPass" name="pass" placeholder="Escriba pass de la cuenta..">
-            
-            <label for="idLabelURL">URL de la cuenta:</label>
-			<input type="text" id="idURL" name="url" placeholder="Escriba url de la cuenta..">
+				<p><label>Número de caracteres:</label>
+					<input type="radio" name="nc" value="8" checked> 8
+					<input type="radio" name="nc" value="12"> 12
+					<input type="radio" name="nc" value="16"> 16
+					<input type="radio" name="nc" value="24"> 24
+					<input type="radio" name="nc" value="32"> 32
+					<input type="radio" name="nc" value="64"> 64
+				</p>
+
+				<label>Número de digitos: </label>
+				<select name="menuDig">
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+				  </select>
+
+				<label>Número de símbolos: </label>
+				<select name="menuSym">
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+				  </select>
+
+				<p><label>Alternar mayúsculas y minúsculas:</label>
+					<input type="radio" name="am" value="s" checked> Sí
+					<input type="radio" name="am" value="n"> No
+				</p>
+
+				<p><label>Repetir caracteres:</label>
+					<input type="radio" name="rc" value="s" checked> Sí
+					<input type="radio" name="rc" value="n"> No
+				</p>
+				
+				<button id="idGenerate">Generar contraseña</button>
+	
+				<textarea id="idPassword" name="cuentas" rows="1" style="resize:none; width: 100%" readonly></textarea>
+				
+				<button id="idSend">Enviar al formulario</button>
 			
-			<button id="idView">Mostrar cuentas</button><button id="idCreate">Añadir cuenta</button>
-
-			<textarea id="idCuentas" name="cuentas" rows="10" style="resize:none; width: 100%" readonly></textarea>
-        </div>
+			</div>
         
         <script>
 			
@@ -169,6 +211,22 @@
 			const inputPass = document.getElementById('idPass');
             const inputURL = document.getElementById('idURL');
 			const cuentasText = document.getElementById("idCuentas");
+
+			//getRadioButtonSelectedValue(document.frmSO.so);
+/*
+			var select = document.getElementById('provincia');
+			select.addEventListener('change',
+			function(){
+				var selectedOption = this.options[select.selectedIndex];
+				console.log(selectedOption.value + ': ' + selectedOption.text);
+			});*/
+
+			//Funcion para saber que radio está elegido
+			function getRadioButtonSelectedValue(ctrl)
+			{
+				for(i=0;i<ctrl.length;i++)
+					if(ctrl[i].checked) return ctrl[i].value;
+			}
 
             //Funcion para el boton de crear cuenta
             createButton.addEventListener('click', async () => {

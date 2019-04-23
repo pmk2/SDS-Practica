@@ -33,9 +33,9 @@ type usuario struct {
 
 //Estructura de cuenta
 type cuenta struct {
-	user string
-	pass string
-	url  string
+	User string `json:"user"`
+	Pass string `json:"pass"`
+	URL  string `json:"url"`
 }
 
 func (c *usuario) setDatosUser(us string, pas string) {
@@ -106,6 +106,13 @@ func (c *usuario) cambiarPantalla() {
 	cuentas(c)
 }
 
+func (c *usuario) getRandomPass() string {
+	c.Lock()
+	defer c.Unlock()
+	randomPass()
+	return "hola"
+}
+
 func main() {
 	args := []string{}
 	if runtime.GOOS == "linux" {
@@ -131,6 +138,7 @@ func main() {
 	ui.Bind("getValidado", c.getValidado)
 	ui.Bind("validarUser", c.validarUser)
 	ui.Bind("registerUser", c.registerUser)
+	ui.Bind("getRandomPass", c.getRandomPass)
 	//ui.Bind("getCuentas", c.getCuentas)
 	ui.Bind("getMSG", c.getMSG)
 	ui.Bind("cambiarPantalla", c.cambiarPantalla)

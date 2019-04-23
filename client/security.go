@@ -20,13 +20,13 @@ func decryptCuentas(cuentasEnc []cuenta, key []byte) []cuenta {
 
 	for i := 0; i < len(cuentasEnc); i++ {
 		//		json.Unmarshal(responseData, &respuesta)
-		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].user), key)), &user)
-		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].pass), key)), &pass)
-		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].url), key)), &url)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].User), key)), &user)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].Pass), key)), &pass)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].URL), key)), &url)
 		//fmt.Println("Entra despues")
-		cuenta.user = user
-		cuenta.pass = pass
-		cuenta.url = url
+		cuenta.User = user
+		cuenta.Pass = pass
+		cuenta.URL = url
 
 		cuentasDec = append(cuentasDec, cuenta)
 	}

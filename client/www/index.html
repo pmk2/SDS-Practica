@@ -151,7 +151,9 @@
 			<label for="idPass">Password:</label>
 			<input type="password" id="idPass" name="pass" placeholder="Escriba pass..">
 			
-			<button id="idLogin">Login</button><button id="idRegister">Register</button>
+			<button id="idLogin">Login</button>
+			<button id="idRegister">Register</button>
+			<button id="idGen">Generar Password</button>
 
 			<textarea id="idCuentas" name="cuentas" rows="2" readonly></textarea>
 		</div>
@@ -162,6 +164,7 @@
   			//	document.getElementById("idUser").setAttribute("value", "pablo");
 			//}
 
+			const generateButton = document.getElementById('idGen');
 			const registerButton = document.getElementById('idRegister');
 			const loginButton = document.getElementById('idLogin');
 			const inputUser = document.getElementById('idUser');
@@ -202,6 +205,11 @@
 					alert(cuentas);
 				}*/
 			}
+
+			generateButton.addEventListener('click', async () => {
+				var randomPass = `${await window.getRandomPass()}`;
+				inputPass.value = randomPass;
+			});
 
 			registerButton.addEventListener('click', async () => {
 				var userText = inputUser.value;

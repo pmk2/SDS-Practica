@@ -16,7 +16,12 @@ import (
 // respuesta del servidor de cuenta
 type respCuenta struct {
 	Ok      bool   // true -> correcto, false -> error
-	Cuentas string // mensaje adicional
+	Cuentas string // cuentas del user
+}
+
+type respPrueba struct {
+	Ok      bool     `json:"Ok"`
+	Cuentas []cuenta `json:"Cuentas"`
 }
 
 // respuesta del servidor
@@ -135,11 +140,11 @@ func insertCuenta(c *usuario) resp {
 
 	var respuesta resp
 	// Anyadir cuenta al user
-	userJSON, err := json.Marshal(c.cuentaInsertar.user) // Codificamos con JSON el user
+	userJSON, err := json.Marshal(c.cuentaInsertar.User) // Codificamos con JSON el user
 	chk(err)
-	passJSON, err := json.Marshal(c.cuentaInsertar.pass) // Codificamos con JSON el user
+	passJSON, err := json.Marshal(c.cuentaInsertar.Pass) // Codificamos con JSON el user
 	chk(err)
-	urlJSON, err := json.Marshal(c.cuentaInsertar.url) // Codificamos con JSON el user
+	urlJSON, err := json.Marshal(c.cuentaInsertar.URL) // Codificamos con JSON el user
 	chk(err)
 
 	data := url.Values{}
@@ -186,7 +191,7 @@ func obtenerCuentasUser(c *usuario) []cuenta {
 	//keyLogin := keyClient[:32]  // una mitad para el login (256 bits)
 	keyData := keyClient[32:64] // la otra para los datos (256 bits)
 
-	var respuesta respCuenta
+	var respuesta respPrueba
 	// Anyadir cuenta al user
 	/*userJSON, err := json.Marshal(c.cuentaInsertar.user) // Codificamos con JSON el user
 	chk(err)
@@ -213,7 +218,8 @@ func obtenerCuentasUser(c *usuario) []cuenta {
 
 	//transformar String de cuentas a []cuenta
 	var cuentasUser []cuenta
-	cuentasUser = transformarCuentas(respuesta.Cuentas)
+	//cuentasUser = transformarCuentas(respuesta.Cuentas)
+	cuentasUser = respuesta.Cuentas
 
 	cuentas = decryptCuentas(cuentasUser, keyData)
 

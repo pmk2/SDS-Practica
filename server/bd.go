@@ -28,9 +28,9 @@ func mostrarCuentas(id string) []cuenta {
 		err3 := dato.Scan(&idCuenta, &idUser, &user, &password, &url)
 		chk(err3)
 
-		cuenta.user = user
-		cuenta.pass = password
-		cuenta.url = url
+		cuenta.User = user
+		cuenta.Pass = password
+		cuenta.URL = url
 
 		cuentas = append(cuentas, cuenta)
 
