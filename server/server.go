@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -20,16 +19,14 @@ type user struct {
 
 //Estructura de cuenta
 type cuenta struct {
-	User string `json:"user"`
-	Pass string `json:"pass"`
-	URL  string `json:"url"`
+	User   string `json:"user"`
+	Pass   string `json:"pass"`
+	URL    string `json:"url"`
+	Notes  string `json:"notes"`
+	Credit string `json:"credit"`
 }
 
-// mapa con todos los usuarios
-// (se podría codificar en JSON y escribir/leer de disco para persistencia)
-var gUsers map[string]user
-
-// respuesta del servidor
+// respuesta del servidor para validar user
 type resp struct {
 	Ok  bool   // true -> correcto, false -> error
 	Msg string // mensaje adicional
@@ -38,11 +35,6 @@ type resp struct {
 
 // respuesta del servidor de cuenta
 type respCuenta struct {
-	Ok      bool   // true -> correcto, false -> error
-	Cuentas string // cuentas del user
-}
-
-type respPrueba struct {
 	Ok      bool     `json:"Ok"`
 	Cuentas []cuenta `json:"Cuentas"`
 }
@@ -57,34 +49,27 @@ func response(w io.Writer, ok bool, msg string, id int) {
 
 // función para escribir una respuesta del servidor
 func responseCuentas(w io.Writer, ok bool, cuentas []cuenta) {
-	var cu string
-	cu = ""
-	for i := 0; i < len(cuentas); i++ {
-		cu += cuentas[i].User + "|" + cuentas[i].Pass + "|" + cuentas[i].URL + "#"
-	}
-	r := respPrueba{Ok: ok, Cuentas: cuentas} // formateamos respuesta
+	r := respCuenta{Ok: ok, Cuentas: cuentas} // formateamos respuesta
 
 	rJSON, err := json.Marshal(&r) // codificamos en JSON
 	chk(err)                       // comprobamos error
 	w.Write(rJSON)                 // escribimos el JSON resultante
 
 	//------------Pruebas-----------------
-	rPrueba := respPrueba{Ok: ok, Cuentas: cuentas}
-	rPruebaJSON, _ := json.Marshal(rPrueba)
+	//rPrueba := respCuenta{Ok: ok, Cuentas: cuentas}
+	//rPruebaJSON, _ := json.Marshal(rPrueba)
 	//prueba := string(rPruebaJSON)
 	//fmt.Println(prueba)
 	//------------------------------------
 
-	var res respPrueba
+	//var res respCuenta
 	//accounts := make([]cuenta, len(cuentas))
-	json.Unmarshal(rPruebaJSON, &res)
-	fmt.Println(res)
+	//json.Unmarshal(rPruebaJSON, &res)
+	//fmt.Println(res)
 }
 
 // gestiona el modo servidor
 func server() {
-
-	gUsers = make(map[string]user) // inicializamos mapa de usuarios
 
 	http.HandleFunc("/", handler) // asignamos un handler global
 
@@ -95,22 +80,24 @@ func server() {
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
-	req.ParseForm()                              // es necesario parsear el formulario
+	//req.ParseForm()                              // es necesario parsear el formulario
+	req.ParseMultipartForm(1024)
 	w.Header().Set("Content-Type", "text/plain") // cabecera estándar
 
-	switch req.Form.Get("cmd") { // comprobamos comando desde el cliente
+	//switch req.Form.Get("cmd") { // comprobamos comando desde el cliente
+	switch req.PostFormValue("cmd") { // comprobamos comando desde el cliente
 	case "register": // ** registro
 		//var idUser int
 		var existeUser bool
 		//var passUser, saltUser string
 
 		u := user{}
-		u.Name = req.Form.Get("user")              // nombre
-		u.Salt = make([]byte, 16)                  // sal (16 bytes == 128 bits)
-		rand.Read(u.Salt)                          // la sal es aleatoria
-		u.Data = make(map[string]string)           // reservamos mapa de datos de usuario
-		u.Data["private"] = req.Form.Get("prikey") // clave privada
-		u.Data["public"] = req.Form.Get("pubkey")  // clave pública
+		u.Name = req.Form.Get("user") // nombre
+		u.Salt = make([]byte, 16)     // sal (16 bytes == 128 bits)
+		rand.Read(u.Salt)             // la sal es aleatoria
+		//u.Data = make(map[string]string)           // reservamos mapa de datos de usuario
+		//u.Data["private"] = req.Form.Get("prikey") // clave privada
+		//u.Data["public"] = req.Form.Get("pubkey")  // clave pública
 		password := decode64(req.Form.Get("pass")) // contraseña (keyLogin)
 
 		// "hasheamos" la contraseña con scrypt
@@ -183,13 +170,15 @@ func handler(w http.ResponseWriter, req *http.Request) {
 
 	case "addAccount": // ** login
 		//var idUser int
-		var idUser, userCuenta, passCuenta, urlCuenta string
+		var idUser, userCuenta, passCuenta, urlCuenta, notasCuenta, tarjetaCuenta string
 		idUser = req.Form.Get("id")
 		userCuenta = req.Form.Get("user")
 		passCuenta = req.Form.Get("pass")
 		urlCuenta = req.Form.Get("url")
+		notasCuenta = req.Form.Get("notes")
+		tarjetaCuenta = req.Form.Get("credit")
 
-		insertado := insertCuenta(idUser, userCuenta, passCuenta, urlCuenta)
+		insertado := insertCuenta(idUser, userCuenta, passCuenta, urlCuenta, notasCuenta, tarjetaCuenta)
 
 		if insertado {
 			response(w, true, "Cuenta insertada", 0)

@@ -15,7 +15,7 @@ import (
 
 func decryptCuentas(cuentasEnc []cuenta, key []byte) []cuenta {
 	var cuentasDec []cuenta
-	var user, pass, url string
+	var user, pass, url, notes, credit string
 	var cuenta cuenta
 
 	for i := 0; i < len(cuentasEnc); i++ {
@@ -23,10 +23,14 @@ func decryptCuentas(cuentasEnc []cuenta, key []byte) []cuenta {
 		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].User), key)), &user)
 		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].Pass), key)), &pass)
 		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].URL), key)), &url)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].Notes), key)), &notes)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].Credit), key)), &credit)
 		//fmt.Println("Entra despues")
 		cuenta.User = user
 		cuenta.Pass = pass
 		cuenta.URL = url
+		cuenta.Notes = notes
+		cuenta.Credit = credit
 
 		cuentasDec = append(cuentasDec, cuenta)
 	}

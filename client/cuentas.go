@@ -9,21 +9,22 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
-	"strings"
 
 	"github.com/zserge/lorca"
 )
 
-func (c2 *usuario) setCuentaInsertar(login string, pass string, urlC string) {
+func (c2 *usuario) setCuentaInsertar(login string, pass string, urlC string, notes string, credit string) {
 	//c2.Lock()
 	//defer c2.Unlock()
 	var account cuenta
 	account.User = login
 	account.Pass = pass
 	account.URL = urlC
+	account.Notes = notes
+	account.Credit = credit
 
 	c2.cuentaInsertar = account
-	c2.mensaje = "Login: " + login + " Pass: " + pass + " URL: " + urlC
+	c2.mensaje = "Login: " + login + " Pass: " + pass + " URL: " + urlC + " Notes: " + notes + " Credit Card: " + credit
 }
 
 func (c2 *usuario) obtenerCuentas() {
@@ -39,12 +40,11 @@ func (c2 *usuario) getMensaje() string {
 }
 
 func (c2 *usuario) getCuentas() string {
-	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
 	contador := 1
 	cuentasUnidas := "*****Cuentas de " + c2.user + "*****\n"
 	for i := 0; i < len(c2.cuentas); i++ {
 		contStr := strconv.Itoa(contador)
-		cuentasUnidas += contStr + ". Usuario: " + c2.cuentas[i].User + "|| Password: " + c2.cuentas[i].Pass + "|| URL: " + c2.cuentas[i].URL + "\n"
+		cuentasUnidas += contStr + ". Usuario: " + c2.cuentas[i].User + " || Password: " + c2.cuentas[i].Pass + " || URL: " + c2.cuentas[i].URL + " || Notes: " + c2.cuentas[i].Notes + " || Credit Card: " + c2.cuentas[i].Credit + "\n"
 		contador++
 	}
 	c2.mensaje = cuentasUnidas
@@ -58,12 +58,17 @@ func (c2 *usuario) insertarCuenta() {
 	c2.mensaje = resul.Msg
 }
 
+func (c2 *usuario) getRandomPassCuentas() string {
+	random := randomPass()
+	return random
+}
+
 func cuentas(user *usuario) {
 	args := []string{}
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 600, 685, args...)
+	ui, err := lorca.New("", "", 600, 830, args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,6 +88,7 @@ func cuentas(user *usuario) {
 	ui.Bind("insertarCuenta", c2.insertarCuenta)
 	ui.Bind("getMensaje", c2.getMensaje)
 	ui.Bind("getCuentas", c2.getCuentas)
+	ui.Bind("getRandomPass", c2.getRandomPassCuentas)
 
 	// Load HTML.
 	b, err := ioutil.ReadFile("./www/indexCuentas.html") // just pass the file name
@@ -110,6 +116,7 @@ func cuentas(user *usuario) {
 	log.Println("exiting...")
 }
 
+/*
 func transformarCuentas(cuentasString string) []cuenta {
 	var cuentas []cuenta
 	var cuenta cuenta
@@ -130,4 +137,4 @@ func transformarCuentas(cuentasString string) []cuenta {
 	//fmt.Println(cuentas)
 
 	return cuentas
-}
+}*/

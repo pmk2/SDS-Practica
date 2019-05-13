@@ -73,10 +73,10 @@ func client(c *usuario, opc int) resp {
 		data.Set("pass", encode64(keyLogin)) // "contraseña" a base64
 
 		// comprimimos y codificamos la clave pública
-		data.Set("pubkey", encode64(compress(pubJSON)))
+		//data.Set("pubkey", encode64(compress(pubJSON)))
 
 		// comprimimos, ciframos y codificamos la clave privada
-		data.Set("prikey", encode64(encrypt(compress(pkJSON), keyData)))
+		//data.Set("prikey", encode64(encrypt(compress(pkJSON), keyData)))
 
 		r, err := client.PostForm("https://localhost:10443", data) // enviamos por POST
 		chk(err)
@@ -142,9 +142,13 @@ func insertCuenta(c *usuario) resp {
 	// Anyadir cuenta al user
 	userJSON, err := json.Marshal(c.cuentaInsertar.User) // Codificamos con JSON el user
 	chk(err)
-	passJSON, err := json.Marshal(c.cuentaInsertar.Pass) // Codificamos con JSON el user
+	passJSON, err := json.Marshal(c.cuentaInsertar.Pass) // Codificamos con JSON la pass
 	chk(err)
-	urlJSON, err := json.Marshal(c.cuentaInsertar.URL) // Codificamos con JSON el user
+	urlJSON, err := json.Marshal(c.cuentaInsertar.URL) // Codificamos con JSON la url
+	chk(err)
+	notesJSON, err := json.Marshal(c.cuentaInsertar.Notes) // Codificamos con JSON las notas
+	chk(err)
+	creditJSON, err := json.Marshal(c.cuentaInsertar.Credit) // Codificamos con JSON la tarjeta
 	chk(err)
 
 	data := url.Values{}
@@ -152,10 +156,14 @@ func insertCuenta(c *usuario) resp {
 	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
 	// comprimimos, ciframos y codificamos la clave privada
 	data.Set("user", encode64(encrypt(compress(userJSON), keyData)))
-	// comprimimos, ciframos y codificamos la clave privada
+	// comprimimos, ciframos y codificamos la pass
 	data.Set("pass", encode64(encrypt(compress(passJSON), keyData)))
-	// comprimimos, ciframos y codificamos la clave privada
+	// comprimimos, ciframos y codificamos la url
 	data.Set("url", encode64(encrypt(compress(urlJSON), keyData)))
+	// comprimimos, ciframos y codificamos las notas
+	data.Set("notes", encode64(encrypt(compress(notesJSON), keyData)))
+	// comprimimos, ciframos y codificamos la tarjeta
+	data.Set("credit", encode64(encrypt(compress(creditJSON), keyData)))
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)

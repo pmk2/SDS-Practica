@@ -33,9 +33,11 @@ type usuario struct {
 
 //Estructura de cuenta
 type cuenta struct {
-	User string `json:"user"`
-	Pass string `json:"pass"`
-	URL  string `json:"url"`
+	User   string `json:"user"`
+	Pass   string `json:"pass"`
+	URL    string `json:"url"`
+	Notes  string `json:"notes"`
+	Credit string `json:"credit"`
 }
 
 func (c *usuario) setDatosUser(us string, pas string) {
@@ -109,8 +111,8 @@ func (c *usuario) cambiarPantalla() {
 func (c *usuario) getRandomPass() string {
 	c.Lock()
 	defer c.Unlock()
-	randomPass()
-	return "hola"
+	random := randomPass()
+	return random
 }
 
 func main() {

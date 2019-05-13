@@ -23,14 +23,16 @@ func mostrarCuentas(id string) []cuenta {
 	defer dato.Close() //Para que se cierre la query al finalizar
 
 	for dato.Next() {
-		var user, password, url string
+		var user, password, url, notes, credit string
 		var idCuenta, idUser int
-		err3 := dato.Scan(&idCuenta, &idUser, &user, &password, &url)
+		err3 := dato.Scan(&idCuenta, &idUser, &user, &password, &url, &notes, &credit)
 		chk(err3)
 
 		cuenta.User = user
 		cuenta.Pass = password
 		cuenta.URL = url
+		cuenta.Notes = notes
+		cuenta.Credit = credit
 
 		cuentas = append(cuentas, cuenta)
 
@@ -198,7 +200,7 @@ func insertUser(user string, pass string, salt string) bool {
 }
 
 //Funcion para hacer inserts en la base de datos
-func insertCuenta(id string, user string, pass string, url string) bool {
+func insertCuenta(id string, user string, pass string, url string, notes string, credit string) bool {
 	var ok bool
 	ok = false
 
@@ -210,7 +212,7 @@ func insertCuenta(id string, user string, pass string, url string) bool {
 		defer db.Close() //Para que se cierre la bd al finalizar
 
 		//Query para insertar cuenta
-		insert, err2 := db.Query("INSERT INTO cuentas (id_user, user, password, sitio_web) VALUES (" + id + ",'" + user + "','" + pass + "','" + url + "')")
+		insert, err2 := db.Query("INSERT INTO cuentas (id_user, user, password, sitio_web, notas, tarjeta) VALUES (" + id + ",'" + user + "','" + pass + "','" + url + "','" + notes + "','" + credit + "')")
 		if err2 != nil {
 			fmt.Print("Error en la query: ")
 			fmt.Println(err2)
