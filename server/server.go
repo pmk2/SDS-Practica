@@ -6,8 +6,19 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/scrypt"
 )
+
+// Create the JWT key used to create the signature
+var jwtKey = []byte("my_secret_key")
+
+// Claims Create a struct that will be encoded to a JWT.
+// We add jwt.StandardClaims as an embedded type, to provide fields like expiry time
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
+}
 
 // ejemplo de tipo para un usuario
 type user struct {
@@ -87,7 +98,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	//switch req.Form.Get("cmd") { // comprobamos comando desde el cliente
 	switch req.PostFormValue("cmd") { // comprobamos comando desde el cliente
 	case "register": // ** registro
-		//var idUser int
+		var idUser int
 		var existeUser bool
 		//var passUser, saltUser string
 
@@ -114,20 +125,12 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		} else {
 			insertado := insertUser(u.Name, string(encode64(u.Hash)), string(encode64(u.Salt)))
 			if insertado {
-				response(w, insertado, "Usuario registrado correctamente", 0)
+				_, idUser, _, _ = devolverUser(u.Name)
+				response(w, insertado, "Usuario registrado correctamente", idUser)
 			} else {
 				response(w, insertado, "Fallo al insertar user", 0)
 			}
 		}
-
-		/*
-			_, ok := gUsers[u.Name] // ¿existe ya el usuario?
-			if ok {
-				response(w, false, "Usuario ya registrado")
-			} else {
-				gUsers[u.Name] = u
-				response(w, true, "Usuario registrado")
-			}*/
 
 	case "login": // ** login
 		//var idUser int
@@ -149,26 +152,14 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			}
 
 		} else {
-			response(w, false, "El usuario no existe", 0)
+			if idUser == 0 {
+				response(w, false, "La base de datos no está disponible, inténtelo de nuevo más tarde", 0)
+			} else if idUser == -1 {
+				response(w, false, "El usuario no existe", 0)
+			}
 		}
 
-	/*
-		u, ok := gUsers[req.Form.Get("user")] // ¿existe ya el usuario?
-		if !ok {
-			response(w, false, "Usuario inexistente")
-			return
-		}
-
-		password := decode64(req.Form.Get("pass"))               // obtenemos la contraseña
-		hash, _ := scrypt.Key(password, u.Salt, 16384, 8, 1, 32) // scrypt(contraseña)
-		if bytes.Compare(u.Hash, hash) != 0 {                    // comparamos
-			response(w, false, "Credenciales inválidas")
-			return
-		}
-		response(w, true, "Credenciales válidas")
-	*/
-
-	case "addAccount": // ** login
+	case "addAccount": // ** Anyadir cuenta
 		//var idUser int
 		var idUser, userCuenta, passCuenta, urlCuenta, notasCuenta, tarjetaCuenta string
 		idUser = req.Form.Get("id")
@@ -188,19 +179,12 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		}
 
 	case "getAccounts": // ** Obtener cuentas de usuario
-		//var idUser int
 		var idUser string
 		idUser = req.Form.Get("id")
-
-		//insertado := insertCuenta(idUser, userCuenta, passCuenta, urlCuenta)
-
 		cuentasUser := mostrarCuentas(idUser)
-
-		//fmt.Println(cuentasUser)
 
 		if len(cuentasUser) > 0 {
 			responseCuentas(w, true, cuentasUser)
-
 		} else {
 			responseCuentas(w, false, cuentasUser)
 		}

@@ -99,6 +99,7 @@ func (c *usuario) registerUser() {
 	resul = client(c, 0)
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
+	c.id = resul.ID
 	//c.cuentas = client(c, 0)
 }
 

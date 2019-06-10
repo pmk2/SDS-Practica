@@ -154,7 +154,7 @@ func insertCuenta(c *usuario) resp {
 	data := url.Values{}
 	data.Set("cmd", "addAccount")      // comando (string)
 	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
-	// comprimimos, ciframos y codificamos la clave privada
+	// comprimimos, ciframos y codificamos el user
 	data.Set("user", encode64(encrypt(compress(userJSON), keyData)))
 	// comprimimos, ciframos y codificamos la pass
 	data.Set("pass", encode64(encrypt(compress(passJSON), keyData)))
