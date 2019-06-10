@@ -31,7 +31,7 @@ func (c2 *usuario) obtenerCuentas() {
 	var cuentas []cuenta
 	cuentas = obtenerCuentasUser(c2)
 	c2.cuentas = cuentas
-	fmt.Println(c2.cuentas)
+	//fmt.Println(c2.cuentas)
 }
 
 func (c2 *usuario) getMensaje() string {
@@ -40,15 +40,20 @@ func (c2 *usuario) getMensaje() string {
 }
 
 func (c2 *usuario) getCuentas() string {
-	contador := 1
-	cuentasUnidas := "*****Cuentas de " + c2.user + "*****\n"
-	for i := 0; i < len(c2.cuentas); i++ {
-		contStr := strconv.Itoa(contador)
-		cuentasUnidas += contStr + ". Usuario: " + c2.cuentas[i].User + " || Password: " + c2.cuentas[i].Pass + " || URL: " + c2.cuentas[i].URL + " || Notes: " + c2.cuentas[i].Notes + " || Credit Card: " + c2.cuentas[i].Credit + "\n"
-		contador++
+	if c2.cuentas != nil {
+		contador := 1
+		cuentasUnidas := "*****Cuentas de " + c2.user + "*****\n"
+		for i := 0; i < len(c2.cuentas); i++ {
+			contStr := strconv.Itoa(contador)
+			cuentasUnidas += contStr + ". Usuario: " + c2.cuentas[i].User + " || Password: " + c2.cuentas[i].Pass + " || URL: " + c2.cuentas[i].URL + " || Notes: " + c2.cuentas[i].Notes + " || Credit Card: " + c2.cuentas[i].Credit + "\n"
+			contador++
+		}
+		c2.mensaje = cuentasUnidas
+		fmt.Println(c2.mensaje)
+	} else {
+		c2.mensaje = "Token de sesión incorrecto o expirado. Cierre sesión y vuelva a conectarse."
 	}
-	c2.mensaje = cuentasUnidas
-	fmt.Println(c2.mensaje)
+
 	return c2.mensaje
 }
 

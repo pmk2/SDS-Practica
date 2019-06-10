@@ -29,6 +29,7 @@ type usuario struct {
 	mensaje        string
 	cuentas        []cuenta
 	cuentaInsertar cuenta
+	token          string
 }
 
 //Estructura de cuenta
@@ -90,6 +91,7 @@ func (c *usuario) validarUser() {
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
 	c.id = resul.ID
+	c.token = resul.Token
 }
 
 func (c *usuario) registerUser() {
@@ -100,6 +102,7 @@ func (c *usuario) registerUser() {
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
 	c.id = resul.ID
+	c.token = resul.Token
 	//c.cuentas = client(c, 0)
 }
 

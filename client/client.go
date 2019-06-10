@@ -22,13 +22,15 @@ type respCuenta struct {
 type respPrueba struct {
 	Ok      bool     `json:"Ok"`
 	Cuentas []cuenta `json:"Cuentas"`
+	//Token   string   `json:"Token"`
 }
 
 // respuesta del servidor
 type resp struct {
-	Ok  bool   // true -> correcto, false -> error
-	Msg string // mensaje adicional
-	ID  int    //id del user
+	Ok    bool   // true -> correcto, false -> error
+	Msg   string // mensaje adicional
+	ID    int    //id del user
+	Token string // token de sesion
 }
 
 // opcion 0 register, 1 login
@@ -66,7 +68,7 @@ func client(c *usuario, opc int) resp {
 	var respuesta resp
 	switch opc {
 	case 0:
-		// ** ejemplo de registro
+		// registro
 		data := url.Values{}                 // estructura para contener los valores
 		data.Set("cmd", "register")          // comando (string)
 		data.Set("user", nameUser)           // usuario (string)
@@ -92,7 +94,7 @@ func client(c *usuario, opc int) resp {
 		json.Unmarshal(responseData, &respuesta)
 
 	case 1:
-		// ** ejemplo de login
+		// login
 		data := url.Values{}
 		data.Set("cmd", "login")             // comando (string)
 		data.Set("user", nameUser)           // usuario (string)
@@ -117,7 +119,7 @@ func client(c *usuario, opc int) resp {
 		json.Unmarshal(responseData, &respuesta)
 
 		//responseString := string(responseData)
-		//fmt.Println(responseString)
+		//fmt.Println(respuesta.Token)
 	}
 
 	return respuesta
@@ -164,6 +166,8 @@ func insertCuenta(c *usuario) resp {
 	data.Set("notes", encode64(encrypt(compress(notesJSON), keyData)))
 	// comprimimos, ciframos y codificamos la tarjeta
 	data.Set("credit", encode64(encrypt(compress(creditJSON), keyData)))
+	// Pasamos, tambien, el token de sesion
+	data.Set("token", c.token)
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
@@ -211,6 +215,8 @@ func obtenerCuentasUser(c *usuario) []cuenta {
 	data := url.Values{}
 	data.Set("cmd", "getAccounts")     // comando (string)
 	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
+	data.Set("token", c.token)         // token de sesion
+	//fmt.Println(c.token)
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
@@ -224,15 +230,20 @@ func obtenerCuentasUser(c *usuario) []cuenta {
 	json.Unmarshal(responseData, &respuesta)
 	//fmt.Println(respuesta.Cuentas)
 
-	//transformar String de cuentas a []cuenta
-	var cuentasUser []cuenta
-	//cuentasUser = transformarCuentas(respuesta.Cuentas)
-	cuentasUser = respuesta.Cuentas
+	// Comprobamos que el token a true or false
+	if respuesta.Ok {
+		//transformar String de cuentas a []cuenta
+		var cuentasUser []cuenta
+		//cuentasUser = transformarCuentas(respuesta.Cuentas)
+		cuentasUser = respuesta.Cuentas
 
-	cuentas = decryptCuentas(cuentasUser, keyData)
+		cuentas = decryptCuentas(cuentasUser, keyData)
 
-	//responseString := string(responseData)
-	//fmt.Println(cuentas)
+		//responseString := string(responseData)
+		//fmt.Println(cuentas)
+	} else {
+		cuentas = respuesta.Cuentas
+	}
 
 	return cuentas
 }
