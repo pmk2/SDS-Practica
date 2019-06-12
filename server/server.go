@@ -262,14 +262,22 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			hash, _ := scrypt.Key(password, []byte(decode64(saltUser)), 16384, 8, 1, 32)
 			stringHash := string(encode64(hash))
 
-			if comprobarPass(passUser, stringHash) {
-				response(w, true, "Usuario válido", idUser, "")
+			if comprobarPass(passUser, stringHash) { // Comparamos las pass
+				token := crearTokenSesion(strconv.Itoa(idUser)) // Creamos token de sesión
+				//fmt.Println(usersToken)
+
+				response(w, true, "Usuario válido", idUser, token)
+
 			} else {
 				response(w, false, "Contraseña inválida", 0, "")
 			}
 
 		} else {
-			response(w, false, "El usuario no existe", 0, "")
+			if idUser == 0 {
+				response(w, false, "La base de datos no está disponible, inténtelo de nuevo más tarde", 0, "")
+			} else if idUser == -1 {
+				response(w, false, "El usuario no existe", 0, "")
+			}
 		}
 
 	default:
