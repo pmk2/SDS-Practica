@@ -29,13 +29,16 @@ type usuario struct {
 	mensaje        string
 	cuentas        []cuenta
 	cuentaInsertar cuenta
+	token          string
 }
 
 //Estructura de cuenta
 type cuenta struct {
-	User string `json:"user"`
-	Pass string `json:"pass"`
-	URL  string `json:"url"`
+	User   string `json:"user"`
+	Pass   string `json:"pass"`
+	URL    string `json:"url"`
+	Notes  string `json:"notes"`
+	Credit string `json:"credit"`
 }
 
 func (c *usuario) setDatosUser(us string, pas string) {
@@ -88,6 +91,7 @@ func (c *usuario) validarUser() {
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
 	c.id = resul.ID
+	c.token = resul.Token
 }
 
 func (c *usuario) registerUser() {
@@ -97,6 +101,8 @@ func (c *usuario) registerUser() {
 	resul = client(c, 0)
 	c.validado = resul.Ok
 	c.mensaje = resul.Msg
+	c.id = resul.ID
+	c.token = resul.Token
 	//c.cuentas = client(c, 0)
 }
 
@@ -109,8 +115,8 @@ func (c *usuario) cambiarPantalla() {
 func (c *usuario) getRandomPass() string {
 	c.Lock()
 	defer c.Unlock()
-	randomPass()
-	return "hola"
+	random := randomPass()
+	return random
 }
 
 func main() {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 
 	"github.com/sethvargo/go-password/password"
 	"github.com/zserge/lorca"
@@ -29,14 +30,38 @@ func (generate *generatePass) crearRandomPass() {
 	generate.randomPassword = pass
 }
 
-func randomPass() string {
-	var pass string
+func (generate *generatePass) setDatos(numChar int, numDig string, numSym string, altern string, repeat string) {
+	generate.characters = numChar
+	numDigInt, _ := strconv.Atoi(numDig)
+	generate.numDigits = numDigInt
+	numSymInt, _ := strconv.Atoi(numSym)
+	generate.numSymbols = numSymInt
 
+	if altern == "s" {
+		generate.upperLower = false
+	} else {
+		generate.upperLower = true
+	}
+	if repeat == "s" {
+		generate.repeatChar = true
+	} else {
+		generate.repeatChar = false
+	}
+
+	fmt.Println(string(numChar) + " " + numDig + " " + numSym + " " + altern + " " + repeat)
+
+}
+
+func (generate *generatePass) getRandomPass() string {
+	return generate.randomPassword
+}
+
+func randomPass() string {
 	args := []string{}
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 600, 685, args...)
+	ui, err := lorca.New("", "", 600, 725, args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,6 +77,8 @@ func randomPass() string {
 	//c2 = user
 
 	ui.Bind("crearRandomPass", generate.crearRandomPass)
+	ui.Bind("getRandomPass", generate.getRandomPass)
+	ui.Bind("setDatos", generate.setDatos)
 
 	// Load HTML.
 	b, err := ioutil.ReadFile("./www/indexRandom.html") // just pass the file name
@@ -78,5 +105,5 @@ func randomPass() string {
 
 	log.Println("exiting...")
 
-	return pass
+	return generate.randomPassword
 }

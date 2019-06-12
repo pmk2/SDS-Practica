@@ -9,7 +9,7 @@
 
 			label, select {
 				font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
-				font-size: 15px;
+				font-size: 12px;
 				padding: 5px 3px;
 				text-align: left;
 				text-transform: uppercase;
@@ -74,7 +74,7 @@
 				background-color: transparent;
 				cursor: pointer;
 				outline: none;
-				font-size: 18px;
+				font-size: 15px;
 				margin: 1em 0.8em;
 				color: #566473;
 				font-family: Raleway;
@@ -151,10 +151,19 @@
 			<input type="text" id="idLogin" name="user" placeholder="Escriba user de la cuenta..">
 		  
 			<label for="idLabelPass">Password de la cuenta:</label>
-            <input type="password" id="idPass" name="pass" placeholder="Escriba pass de la cuenta..">
+			<br>
+			<input type="password" id="idPass" name="pass" placeholder="Escriba pass de la cuenta.." style="width: 65%;">
+			<button id="idGen" style="font-size: 12px;">Generar Password</button>
+			<br>
             
             <label for="idLabelURL">URL de la cuenta:</label>
 			<input type="text" id="idURL" name="url" placeholder="Escriba url de la cuenta..">
+
+			<label for="idLabelURL">Notas adicionales de la cuenta:</label>
+			<input type="text" id="idNotes" name="notes" placeholder="Escriba notas adicionales de la cuenta..(OPCIONAL)">
+
+			<label for="idLabelURL">Tarjeta de crédito de la cuenta:</label>
+			<input type="text" id="idCredit" name="credit" placeholder="Escriba tarjeta de crédito de la cuenta..(OPCIONAL)">
 			
 			<button id="idView">Mostrar cuentas</button><button id="idCreate">Añadir cuenta</button>
 
@@ -162,12 +171,14 @@
         </div>
         
         <script>
-			
+			const generateButton = document.getElementById('idGen');
             const viewButton = document.getElementById('idView');
 			const createButton = document.getElementById('idCreate');
 			const inputLogin = document.getElementById('idLogin');
 			const inputPass = document.getElementById('idPass');
             const inputURL = document.getElementById('idURL');
+			const inputNotes = document.getElementById('idNotes');
+			const inputCredit = document.getElementById('idCredit');
 			const cuentasText = document.getElementById("idCuentas");
 		
 
@@ -177,23 +188,59 @@
 				renderCuentas();
             });
 
+			generateButton.addEventListener('click', async () => {
+				var randomPass = `${await window.getRandomPass()}`;
+				inputPass.value = randomPass;
+			});
+
             //Funcion para el boton de crear cuenta
             createButton.addEventListener('click', async () => {
 				var loginText = inputLogin.value;
 				var passText = inputPass.value;
 				var urlText = inputURL.value;
+				var notesText = inputNotes.value;
+				var creditText = inputCredit.value;
 
 				if(loginText != "" && passText != "" && urlText != ""){
-                    await setCuentaInsertar(loginText, passText, urlText);
-                    insertarCuenta();
+					if(creditText != "") {
+						if(creditText.length == 16) {
+							if(validarTarjeta(creditText)) {
+								//Una vez validada tarjeta, insertamos la cuenta
+								await setCuentaInsertar(loginText, passText, urlText, notesText, creditText);
+								insertarCuenta();
+							} else {
+								alert("La tarjeta solo puede contener dígitos")
+							}
+							
+						} else {
+							alert("La tarjeta debe contener 16 dígitos")
+						}
+					} else {
+						await setCuentaInsertar(loginText, passText, urlText, notesText, creditText);
+                    	insertarCuenta();
+					}
 				} else if (loginText == "") {
 					alert("El usuario no puede estar en blanco");
 				} else if (passText == "") {
 					alert("La pass no puede estar en blanco");
-				} else {
+				} else if(urlText == "") {
 					alert("La URL no puede estar en blanco");
 				}
             });
+
+			function validarTarjeta(tarjeta){
+				var numeros="0123456789";
+				var tarjetaStr = tarjeta
+
+				for(i = 0; i < tarjetaStr.length; i++){
+					if (numeros.indexOf(tarjetaStr.charAt(i), 0) == -1){
+						console.log(tarjetaStr.charAt(i))
+						return false
+					}
+				}
+
+				return true;
+			}
 
 			const insertarCuenta = async () => {
 				`${await window.insertarCuenta()}`;
