@@ -4,12 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -275,7 +276,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		response(w, false, "Comando inválido", 0, "")
 	}
 
-}
+}}
 
 func getCuentas(cuentas []cuenta) string {
 	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
@@ -287,6 +288,8 @@ func getCuentas(cuentas []cuenta) string {
 		contador++
 	}
 	return cuentasUnidas
+}
+
 // Función para crear el token de sesión
 func crearTokenSesion(user string) string {
 	var tokenSes tokenSession
