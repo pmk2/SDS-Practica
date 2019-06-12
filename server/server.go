@@ -110,6 +110,7 @@ func enableCors(w *http.ResponseWriter) {
 
 func handler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	//req.ParseForm()                              // es necesario parsear el formulario
 	req.ParseMultipartForm(1024)
 	w.Header().Set("Content-Type", "text/plain") // cabecera estándar
@@ -230,6 +231,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 
 		var idUser string
 		idUser = req.Form.Get("user")
+		tokenUser := req.Form.Get("token")
 		if idUser == "" {
 			response(w, false, "No hay usuario activo", 0, "")
 		} else {
@@ -239,12 +241,15 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			key := keyClient[32:64]
 			cuentasDec = decryptCuentas(cuentasUser, key)
 			cuentas := getCuentas(cuentasDec)
+			if comprobarToken(tokenUser, idUser) {
+				if len(cuentasDec) > 0 {
+					response(w, true, cuentas, 0, tokenUser)
 
-			if len(cuentasDec) > 0 {
-				response(w, true, cuentas, 0, "")
-
+				} else {
+					response(w, false, "No dispone de cuentas", 0, "")
+				}
 			} else {
-				response(w, false, "No dispone de cuentas", 0, "")
+				response(w, false, "Token de sesion caducado", 0, "")
 			}
 		}
 
@@ -292,7 +297,7 @@ func getCuentas(cuentas []cuenta) string {
 	cuentasUnidas := ""
 	for i := 0; i < len(cuentas); i++ {
 		contStr := strconv.Itoa(contador)
-		cuentasUnidas += contStr + ". Usuario: " + cuentas[i].User + "|| Password: " + cuentas[i].Pass + "|| URL: " + cuentas[i].URL + "\n"
+		cuentasUnidas += contStr + ". Usuario: " + cuentas[i].User + " || Password: " + cuentas[i].Pass + " || URL: " + cuentas[i].URL + " || Notes: " + cuentas[i].Notes + " || Credit Card: " + cuentas[i].Credit + "\n"
 		contador++
 	}
 	return cuentasUnidas

@@ -26,6 +26,9 @@
                         if(response.Ok){
                             document.getElementById("idCuentas").value = response.Msg
                             document.getElementById("idn").value = response.ID
+                            document.getElementById("token").value = response.Token
+                            document.getElementById("passs").value = document.getElementById("idPass").value
+                            document.getElementById("idPass").value = ""
                         }
                         else{
                             document.getElementById("idCuentas").value = response.Msg
@@ -36,8 +39,9 @@
         }
         
         function pedirCuentas(){
+            var token = document.getElementById("token").value
             var user = document.getElementById("idn").value
-            var key = document.getElementById("idPass").value
+            var key = document.getElementById("passs").value
             var cmd = 'getAccountss'
             var Url = 'https://localhost:10443';
             var xhr = new XMLHttpRequest();
@@ -45,7 +49,8 @@
             var data1 = new FormData();
             data1.append("cmd", cmd) 
             data1.append("user", user)          
-            data1.append("pass", key)       
+            data1.append("pass", key)    
+            data1.append("token", token)   
             
             xhr.onreadystatechange = processRequest;
                 function processRequest(e) {
