@@ -87,7 +87,7 @@ func responseCuentas(w io.Writer, ok bool, cuentas []cuenta) {
 
 	//var res respCuenta
 	//accounts := make([]cuenta, len(cuentas))
-	json.Unmarshal(rPruebaJSON, &res)
+	//json.Unmarshal(rPruebaJSON, &res)
 	//fmt.Println(res)
 }
 
@@ -276,7 +276,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		response(w, false, "Comando inválido", 0, "")
 	}
 
-}}
+}
 
 func getCuentas(cuentas []cuenta) string {
 	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
