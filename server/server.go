@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -100,6 +101,11 @@ func server() {
 	// Para generar certificados autofirmados con openssl usar:
 	//    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=ES/ST=Alicante/L=Alicante/O=UA/OU=Org/CN=www.ua.com"
 	chk(http.ListenAndServeTLS(":10443", "cert.pem", "key.pem", nil))
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "*")
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
@@ -220,10 +226,68 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			responseCuentas(w, false, nil)
 		}
 
+	case "getAccountss":
+
+		var idUser string
+		idUser = req.Form.Get("user")
+		if idUser == "" {
+			response(w, false, "No hay usuario activo", 0, "")
+		} else {
+			cuentasUser := mostrarCuentas(idUser)
+			var cuentasDec []cuenta
+			keyClient := sha512.Sum512([]byte(req.Form.Get("pass")))
+			key := keyClient[32:64]
+			cuentasDec = decryptCuentas(cuentasUser, key)
+			cuentas := getCuentas(cuentasDec)
+
+			if len(cuentasDec) > 0 {
+				response(w, true, cuentas, 0, "")
+
+			} else {
+				response(w, false, "No dispone de cuentas", 0, "")
+			}
+		}
+
+	case "loginext":
+
+		keyClient := sha512.Sum512([]byte(req.Form.Get("pass")))
+		keyLogin := keyClient[:32]
+		var existeUser bool
+		var passUser, saltUser string
+		var idUser int
+		password := keyLogin
+		existeUser, idUser, passUser, saltUser = devolverUser(req.Form.Get("user"))
+
+		if existeUser {
+			hash, _ := scrypt.Key(password, []byte(decode64(saltUser)), 16384, 8, 1, 32)
+			stringHash := string(encode64(hash))
+
+			if comprobarPass(passUser, stringHash) {
+				response(w, true, "Usuario válido", idUser, "")
+			} else {
+				response(w, false, "Contraseña inválida", 0, "")
+			}
+
+		} else {
+			response(w, false, "El usuario no existe", 0, "")
+		}
+
 	default:
 		response(w, false, "Comando inválido", 0, "")
 	}
 
+}
+
+func getCuentas(cuentas []cuenta) string {
+	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
+	contador := 1
+	cuentasUnidas := ""
+	for i := 0; i < len(cuentas); i++ {
+		contStr := strconv.Itoa(contador)
+		cuentasUnidas += contStr + ". Usuario: " + cuentas[i].User + "|| Password: " + cuentas[i].Pass + "|| URL: " + cuentas[i].URL + "\n"
+		contador++
+	}
+	return cuentasUnidas
 }
 
 // Función para crear el token de sesión

@@ -8,11 +8,33 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"runtime"
 	"strings"
 )
+
+func decryptCuentas(cuentasEnc []cuenta, key []byte) []cuenta {
+	var cuentasDec []cuenta
+	var user, pass, url string
+	var cuenta cuenta
+
+	for i := 0; i < len(cuentasEnc); i++ {
+		//		json.Unmarshal(responseData, &respuesta)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].User), key)), &user)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].Pass), key)), &pass)
+		json.Unmarshal(decompress(decrypt(decode64(cuentasEnc[i].URL), key)), &url)
+		//fmt.Println("Entra despues")
+		cuenta.User = user
+		cuenta.Pass = pass
+		cuenta.URL = url
+
+		cuentasDec = append(cuentasDec, cuenta)
+	}
+
+	return cuentasDec
+}
 
 //Encriptar pass con sha
 func encryptPass(pass string) string {
