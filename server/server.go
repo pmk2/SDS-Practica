@@ -231,7 +231,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		var idUser string
 		idUser = req.Form.Get("user")
 		if idUser == "" {
-			response(w, false, "No hay usuario activo", 0)
+			response(w, false, "No hay usuario activo", 0, "")
 		} else {
 			cuentasUser := mostrarCuentas(idUser)
 			var cuentasDec []cuenta
@@ -241,10 +241,10 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			cuentas := getCuentas(cuentasDec)
 
 			if len(cuentasDec) > 0 {
-				response(w, true, cuentas, 0)
+				response(w, true, cuentas, 0, "")
 
 			} else {
-				response(w, false, "No dispone de cuentas", 0)
+				response(w, false, "No dispone de cuentas", 0, "")
 			}
 		}
 
@@ -263,13 +263,13 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			stringHash := string(encode64(hash))
 
 			if comprobarPass(passUser, stringHash) {
-				response(w, true, "Usuario válido", idUser)
+				response(w, true, "Usuario válido", idUser, "")
 			} else {
-				response(w, false, "Contraseña inválida", 0)
+				response(w, false, "Contraseña inválida", 0, "")
 			}
 
 		} else {
-			response(w, false, "El usuario no existe", 0)
+			response(w, false, "El usuario no existe", 0, "")
 		}
 
 	default:
