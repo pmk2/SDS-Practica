@@ -1,0 +1,15 @@
+
+{
+    "manifest_version": 2,
+    "name": "Gestor de contraseñas",
+    "description": "Gestor de contraseñas",
+    "version": "1.0.0",
+    "browser_action": {
+      "default_title": "GESTOR-PASS",
+      "default_icon": "icon.png",
+      "default_popup": "popup.html"
+    },
+    "permissions":[
+      "https://localhost:10443"
+    ]
+  }

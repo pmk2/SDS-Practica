@@ -2,10 +2,11 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/scrypt"
 )
@@ -78,7 +79,7 @@ func responseCuentas(w io.Writer, ok bool, cuentas []cuenta) {
 	var res respPrueba
 	//accounts := make([]cuenta, len(cuentas))
 	json.Unmarshal(rPruebaJSON, &res)
-	fmt.Println(res)
+	//fmt.Println(res)
 }
 
 // gestiona el modo servidor
@@ -94,11 +95,19 @@ func server() {
 	chk(http.ListenAndServeTLS(":10443", "cert.pem", "key.pem", nil))
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "*")
+}
+
 func handler(w http.ResponseWriter, req *http.Request) {
-	req.ParseForm()                              // es necesario parsear el formulario
+
+	enableCors(&w)
+
+	req.ParseMultipartForm(1024)                 // es necesario parsear el formulario
 	w.Header().Set("Content-Type", "text/plain") // cabecera estándar
 
-	switch req.Form.Get("cmd") { // comprobamos comando desde el cliente
+	switch req.PostFormValue("cmd") { // comprobamos comando desde el cliente
 	case "register": // ** registro
 		//var idUser int
 		var existeUser bool
@@ -216,8 +225,66 @@ func handler(w http.ResponseWriter, req *http.Request) {
 			responseCuentas(w, false, cuentasUser)
 		}
 
+	case "getAccountss":
+
+		var idUser string
+		idUser = req.Form.Get("user")
+		if idUser == "" {
+			response(w, false, "No hay usuario activo", 0)
+		} else {
+			cuentasUser := mostrarCuentas(idUser)
+			var cuentasDec []cuenta
+			keyClient := sha512.Sum512([]byte(req.Form.Get("pass")))
+			key := keyClient[32:64]
+			cuentasDec = decryptCuentas(cuentasUser, key)
+			cuentas := getCuentas(cuentasDec)
+
+			if len(cuentasDec) > 0 {
+				response(w, true, cuentas, 0)
+
+			} else {
+				response(w, false, "No dispone de cuentas", 0)
+			}
+		}
+
+	case "loginext":
+
+		keyClient := sha512.Sum512([]byte(req.Form.Get("pass")))
+		keyLogin := keyClient[:32]
+		var existeUser bool
+		var passUser, saltUser string
+		var idUser int
+		password := keyLogin
+		existeUser, idUser, passUser, saltUser = devolverUser(req.Form.Get("user"))
+
+		if existeUser {
+			hash, _ := scrypt.Key(password, []byte(decode64(saltUser)), 16384, 8, 1, 32)
+			stringHash := string(encode64(hash))
+
+			if comprobarPass(passUser, stringHash) {
+				response(w, true, "Usuario válido", idUser)
+			} else {
+				response(w, false, "Contraseña inválida", 0)
+			}
+
+		} else {
+			response(w, false, "El usuario no existe", 0)
+		}
+
 	default:
 		response(w, false, "Comando inválido", 0)
 	}
 
+}
+
+func getCuentas(cuentas []cuenta) string {
+	//FALTA DEVOLVER STRING CON TODAS LAS CUENTAS
+	contador := 1
+	cuentasUnidas := ""
+	for i := 0; i < len(cuentas); i++ {
+		contStr := strconv.Itoa(contador)
+		cuentasUnidas += contStr + ". Usuario: " + cuentas[i].User + "|| Password: " + cuentas[i].Pass + "|| URL: " + cuentas[i].URL + "\n"
+		contador++
+	}
+	return cuentasUnidas
 }
