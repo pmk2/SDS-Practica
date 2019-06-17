@@ -49,7 +49,7 @@ func (c2 *usuario) getCuentas() string {
 			contador++
 		}
 		c2.mensaje = cuentasUnidas
-		fmt.Println(c2.mensaje)
+		//fmt.Println(c2.mensaje)
 	} else {
 		c2.mensaje = "Token de sesión incorrecto o expirado. Cierre sesión y vuelva a conectarse."
 	}

@@ -74,17 +74,8 @@ func client(c *usuario, opc int) resp {
 		data.Set("user", nameUser)           // usuario (string)
 		data.Set("pass", encode64(keyLogin)) // "contraseña" a base64
 
-		// comprimimos y codificamos la clave pública
-		//data.Set("pubkey", encode64(compress(pubJSON)))
-
-		// comprimimos, ciframos y codificamos la clave privada
-		//data.Set("prikey", encode64(encrypt(compress(pkJSON), keyData)))
-
 		r, err := client.PostForm("https://localhost:10443", data) // enviamos por POST
 		chk(err)
-
-		//io.Copy(os.Stdout, r.Body) // mostramos el cuerpo de la respuesta (es un reader)
-		//fmt.Println()
 
 		responseData, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -108,8 +99,6 @@ func client(c *usuario, opc int) resp {
 
 		r, err := client.PostForm("https://localhost:10443", data)
 		chk(err)
-		//io.Copy(os.Stdout, r.Body) // mostramos el cuerpo de la respuesta (es un reader)
-		//fmt.Println()
 
 		responseData, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -117,9 +106,6 @@ func client(c *usuario, opc int) resp {
 		}
 
 		json.Unmarshal(responseData, &respuesta)
-
-		//responseString := string(responseData)
-		//fmt.Println(respuesta.Token)
 	}
 
 	return respuesta
@@ -127,7 +113,6 @@ func client(c *usuario, opc int) resp {
 
 // opcion 0 register, 1 login
 func insertCuenta(c *usuario) resp {
-
 	/* creamos un cliente especial que no comprueba la validez de los certificados
 	esto es necesario por que usamos certificados autofirmados (para pruebas) */
 	tr := &http.Transport{
@@ -171,52 +156,33 @@ func insertCuenta(c *usuario) resp {
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
-	//io.Copy(os.Stdout, r.Body) // mostramos el cuerpo de la respuesta (es un reader)
-	//fmt.Println()
 
 	responseData, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	json.Unmarshal(responseData, &respuesta)
-
-	//responseString := string(responseData)
-	//fmt.Println(responseString)
 
 	return respuesta
 }
 
 //Función para obtener cuentas
 func obtenerCuentasUser(c *usuario) []cuenta {
-
 	var cuentas []cuenta
-	/* creamos un cliente especial que no comprueba la validez de los certificados
-	esto es necesario por que usamos certificados autofirmados (para pruebas) */
+
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-
 	// hash con SHA512 de la contraseña
 	keyClient := sha512.Sum512([]byte(c.pass))
-	//keyLogin := keyClient[:32]  // una mitad para el login (256 bits)
 	keyData := keyClient[32:64] // la otra para los datos (256 bits)
 
 	var respuesta respPrueba
-	// Anyadir cuenta al user
-	/*userJSON, err := json.Marshal(c.cuentaInsertar.user) // Codificamos con JSON el user
-	chk(err)
-	passJSON, err := json.Marshal(c.cuentaInsertar.pass) // Codificamos con JSON el user
-	chk(err)
-	urlJSON, err := json.Marshal(c.cuentaInsertar.url) // Codificamos con JSON el user
-	chk(err)*/
-
 	data := url.Values{}
 	data.Set("cmd", "getAccounts")     // comando (string)
 	data.Set("id", strconv.Itoa(c.id)) // id usuario (string)
 	data.Set("token", c.token)         // token de sesion
-	//fmt.Println(c.token)
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
@@ -225,25 +191,15 @@ func obtenerCuentasUser(c *usuario) []cuenta {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	//fmt.Println(responseData)
 	json.Unmarshal(responseData, &respuesta)
-	//fmt.Println(respuesta.Cuentas)
-
 	// Comprobamos que el token a true or false
 	if respuesta.Ok {
 		//transformar String de cuentas a []cuenta
 		var cuentasUser []cuenta
-		//cuentasUser = transformarCuentas(respuesta.Cuentas)
 		cuentasUser = respuesta.Cuentas
-
 		cuentas = decryptCuentas(cuentasUser, keyData)
-
-		//responseString := string(responseData)
-		//fmt.Println(cuentas)
 	} else {
 		cuentas = respuesta.Cuentas
 	}
-
 	return cuentas
 }

@@ -308,7 +308,7 @@ func crearTokenSesion(user string) string {
 	var tokenSes tokenSession
 	// Declare the expiration time of the token
 	// here, we have kept it as 1 minutes
-	expirationTime := time.Now().Add(10 * time.Second)
+	expirationTime := time.Now().Add(60 * time.Second)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
 		Username: user,

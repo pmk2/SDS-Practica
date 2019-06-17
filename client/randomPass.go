@@ -48,7 +48,7 @@ func (generate *generatePass) setDatos(numChar int, numDig string, numSym string
 		generate.repeatChar = false
 	}
 
-	fmt.Println(string(numChar) + " " + numDig + " " + numSym + " " + altern + " " + repeat)
+	//fmt.Println(string(numChar) + " " + numDig + " " + numSym + " " + altern + " " + repeat)
 
 }
 
@@ -61,7 +61,7 @@ func randomPass() string {
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 600, 725, args...)
+	ui, err := lorca.New("", "", 600, 755, args...)
 	if err != nil {
 		log.Fatal(err)
 	}

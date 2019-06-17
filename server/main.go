@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func main() {
 	//PARA DEPURACION COMENTO LAS LINEAS DE PASSWORD//
-	/*var granted bool
+	var granted bool
 	granted = false
 	for !granted {
 		fmt.Println("Enter password to access the server: ")
@@ -22,7 +25,7 @@ func main() {
 		}
 	}
 	//Si la clave es correcta lanzamos el server
-	fmt.Println("Clave correcta")*/
+	fmt.Println("Clave correcta")
 	fmt.Println("Modo servidor: Esperando peticiones...")
 	server()
 }

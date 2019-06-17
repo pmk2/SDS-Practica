@@ -221,7 +221,7 @@ func insertUser(user string, pass string, salt string) bool {
 func insertCuenta(id string, user string, pass string, url string, notes string, credit string) bool {
 	var ok bool
 	ok = false
-	fmt.Println("ID:" + id + " || User: " + user + " || Pass:" + pass + " || Notes: " + notes + " || Credit:" + credit)
+	//fmt.Println("ID:" + id + " || User: " + user + " || Pass:" + pass + " || Notes: " + notes + " || Credit:" + credit)
 
 	//Comprobamos que user y pass no esten vacios ni null
 	if user != "" && pass != "" && url != "" {
